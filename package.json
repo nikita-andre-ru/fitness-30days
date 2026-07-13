@@ -1,0 +1,12 @@
+{
+  "name": "fitness-30days",
+  "version": "1.0.0",
+  "description": "30-дневные упражнения с облачной синхронизацией",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["fitness", "exercises", "firebase"],
+  "author": "andreevnik82@gmail.com",
+  "license": "MIT"
+}

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💪 30-дневные упражнения (облако)</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --surface-0: #fcfcfb;
+      --surface-1: #f5f5f4;
+      --surface-2: #ffffff;
+      --text-primary: #0b0b0b;
+      --text-secondary: #52514e;
+      --text-muted: #898781;
+      --border: rgba(11, 11, 11, 0.10);
+      --fill-accent: #2a78d6;
+      --on-accent: #ffffff;
+      --bg-accent: #e6f1fb;
+      --text-accent: #185fa5;
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface-0: #0b0b0b;
+        --surface-1: #1a1a19;
+        --surface-2: #2c2c2a;
+        --text-primary: #ffffff;
+        --text-secondary: #c3c2b7;
+        --text-muted: #898781;
+        --border: rgba(255, 255, 255, 0.10);
+        --bg-accent: #0c447c;
+        --text-accent: #85b7eb;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--surface-0);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .auth-box {
+      background: var(--surface-2);
+      padding: 40px;
+      border-radius: 12px;
+      border: 0.5px solid var(--border);
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .auth-box h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .auth-box p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 12px 24px;
+      background: white;
+      border: 1px solid #dadce0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .google-btn:hover {
+      background: #f8f9fa;
+      border-color: #dadce0;
+    }
+
+    .app-screen {
+      display: none;
+    }
+
+    .app-screen.active {
+      display: block;
+    }
+
+    .header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .header-left p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .user-info {
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .user-email {
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .logout-btn {
+      padding: 6px 12px;
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    .logout-btn:hover {
+      background: var(--surface-2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--fill-accent);
+      color: var(--on-accent);
+      border-color: var(--fill-accent);
+    }
+
+    .tab-btn:hover {
+      background: var(--surface-1);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 12px 24px;
+      background: var(--fill-accent);
+      color: var(--on-accent);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      transition: opacity 0.2s;
+    }
+
+    .add-btn:hover {
+      opacity: 0.9;
+    }
+
+    .date-selector {
+      background: var(--surface-2);
+      padding: 16px;
+      border-radius: 12px;
+      border: 0.5px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .date-selector label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .date-selector input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .exercises-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .exercise-card {
+      background: var(--surface-2);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid #2a78d6;
+    }
+
+    .exercise-card.completed {
+      border-left-color: #0ca30c;
+    }
+
+    .exercise-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0 0 4px;
+      color: var(--text-primary);
+    }
+
+    .exercise-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0 0 12px;
+    }
+
+    .exercise-input {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .exercise-input label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .exercise-input textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      font-family: inherit;
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .exercise-buttons {
+      display: grid;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--fill-accent);
+      color: var(--on-accent);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-success {
+      background: #0ca30c;
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--surface-1);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border);
+      font-size: 12px;
+    }
+
+    .empty-state {
+      background: var(--surface-2);
+      padding: 32px;
+      border-radius: 12px;
+      text-align: center;
+      border: 0.5px solid var(--border);
+    }
+
+    .empty-state p {
+      color: var(--text-secondary);
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface-1);
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+    }
+
+    .stat-label {
+      margin: 0 0 8px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .progress-list {
+      background: var(--surface-2);
+      padding: 16px;
+      border-radius: 12px;
+      border: 0.5px solid var(--border);
+    }
+
+    .progress-list h3 {
+      margin: 0 0 16px;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .progress-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .progress-info p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .progress-info small {
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+      font-size: 12px;
+      display: block;
+    }
+
+    .progress-percent {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 14px;
+      color: #0ca30c;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      border: 0.5px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin: 0 0 16px;
+      color: var(--text-primary);
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .modal-input {
+      margin-bottom: 16px;
+    }
+
+    .modal-input label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .modal-input input,
+    .modal-input textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .modal-input textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .modal-buttons .btn-primary {
+      background: var(--fill-accent);
+      color: var(--on-accent);
+    }
+
+    .modal-buttons .btn-secondary {
+      background: var(--surface-1);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border);
+    }
+
+    .video-link {
+      display: inline-block;
+      color: var(--text-accent);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 12px;
+      background: var(--bg-accent);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--fill-accent);
+      margin-bottom: 12px;
+    }
+
+    .video-link:hover {
+      opacity: 0.8;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .sync-indicator {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .header-left h1 {
+        font-size: 24px;
+      }
+
+      .stats-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-box">
+      <h1>💪 30-дневные упражнения</h1>
+      <p>Облачная синхронизация на все устройства</p>
+      <button class="google-btn" onclick="loginWithGoogle()">
+        🔐 Вход через Google
+      </button>
+      <p style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
+        Ваши данные безопасно хранятся в облаке и синхронизируются на все устройства
+      </p>
+    </div>
+  </div>
+
+  <!-- App Screen -->
+  <div id="appScreen" class="app-screen">
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <h1>💪 30-дневные упражнения</h1>
+          <p>Облачная синхронизация на все устройства</p>
+        </div>
+        <div class="user-info">
+          <div class="user-email" id="userEmail"></div>
+          <button class="logout-btn" onclick="logout()">Выход</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('exercises')">📋 Упражнения</button>
+        <button class="tab-btn" onclick="switchTab('stats')">📊 Статистика</button>
+      </div>
+
+      <!-- Exercises Tab -->
+      <div id="exercises" class="tab-content active">
+        <button class="add-btn" onclick="openModal()">+ Добавить упражнение на 30 дней</button>
+
+        <div class="date-selector">
+          <label>Дата для отслеживания:</label>
+          <input type="date" id="dateSelector" onchange="updateUI()">
+        </div>
+
+        <div id="exercisesList" class="exercises-grid">
+          <div class="loading">⏳ Загрузка данных...</div>
+        </div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="stats" class="tab-content">
+        <div class="stats-cards">
+          <div class="stat-card">
+            <p class="stat-label">Всего упражнений</p>
+            <p class="stat-value" id="totalExercises">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Активных</p>
+            <p class="stat-value" id="activeExercises">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Средний прогресс</p>
+            <p class="stat-value" id="avgProgress">0%</p>
+          </div>
+        </div>
+
+        <div class="progress-list">
+          <h3>🎯 Прогресс по упражнениям</h3>
+          <div id="progressList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Добавить упражнение</h2>
+
+      <div class="modal-input">
+        <label>Название упражнения *</label>
+        <input type="text" id="exerciseName" placeholder="Например: Отжимания, Пресс, Растяжка...">
+      </div>
+
+      <div class="modal-input">
+        <label>YouTube ссылка (опционально)</label>
+        <input type="text" id="youtubeLink" placeholder="https://www.youtube.com/watch?v=...">
+        <small style="margin-top: 4px; color: var(--text-secondary); display: block;">💡 Вставь ссылку на видео с техникой упражнения</small>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-primary" onclick="addExercise()">✅ Добавить</button>
+        <button class="btn-secondary" onclick="closeModal()">❌ Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Config (andreevnik82@gmail.com)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDV0T_346njOcPhQXEpaK9Q6sUVweQRf4A",
+      authDomain: "fitness30days-8b374.firebaseapp.com",
+      databaseURL: "https://fitness30days-8b374-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fitness30days-8b374",
+      storageBucket: "fitness30days-8b374.firebasestorage.app",
+      messagingSenderId: "333978741784",
+      appId: "1:333978741784:web:a38b3add8660407600a76d",
+      measurementId: "G-EYQ8CBS87G"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let exercises = [];
+    let currentUser = null;
+
+    // Auth State
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appScreen').classList.add('active');
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateSelector').value = today;
+        
+        loadExercises();
+      } else {
+        currentUser = null;
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appScreen').classList.remove('active');
+      }
+    });
+
+    // Google Login
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .catch(error => {
+          alert('Ошибка входа: ' + error.message);
+        });
+    }
+
+    // Logout
+    function logout() {
+      auth.signOut();
+    }
+
+    // Load Exercises
+    function loadExercises() {
+      if (!currentUser) return;
+
+      database.ref(`users/${currentUser.uid}/exercises`).on('value', (snapshot) => {
+        exercises = [];
+        if (snapshot.exists()) {
+          snapshot.forEach((child) => {
+            exercises.push({
+              id: child.key,
+              ...child.val()
+            });
+          });
+        }
+        updateUI();
+      });
+    }
+
+    // Add Exercise
+    function addExercise() {
+      const name = document.getElementById('exerciseName').value.trim();
+      const link = document.getElementById('youtubeLink').value.trim();
+
+      if (!name) {
+        alert('Введи название упражнения!');
+        return;
+      }
+
+      if (!currentUser) return;
+
+      const newExercise = {
+        name,
+        link,
+        startDate: new Date().toISOString().split('T')[0],
+        completed: {},
+        reps: {}
+      };
+
+      database.ref(`users/${currentUser.uid}/exercises`).push(newExercise)
+        .then(() => {
+          closeModal();
+          document.getElementById('exerciseName').value = '';
+          document.getElementById('youtubeLink').value = '';
+        })
+        .catch(error => alert('Ошибка: ' + error.message));
+    }
+
+    // Complete Exercise
+    function completeExercise(id) {
+      if (!currentUser) return;
+
+      const date = document.getElementById('dateSelector').value;
+      const reps = document.getElementById(`reps-${id}`).value;
+
+      database.ref(`users/${currentUser.uid}/exercises/${id}/completed/${date}`).set(true);
+      database.ref(`users/${currentUser.uid}/exercises/${id}/reps/${date}`).set(reps);
+    }
+
+    // Delete Exercise
+    function deleteExercise(id) {
+      if (!confirm('Удалить это упражнение?')) return;
+      if (!currentUser) return;
+
+      database.ref(`users/${currentUser.uid}/exercises/${id}`).remove()
+        .catch(error => alert('Ошибка: ' + error.message));
+    }
+
+    // Get Active Exercises
+    function getActiveExercises() {
+      return exercises.filter(ex => {
+        const startDate = new Date(ex.startDate);
+        const today = new Date();
+        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        return daysElapsed < 30;
+      });
+    }
+
+    // Switch Tab
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelector(`[onclick*="'${tab}'"]`).classList.add('active');
+      if (tab === 'stats') updateStats();
+    }
+
+    // Modal
+    function openModal() {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('exerciseName').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modal')) closeModal();
+    });
+
+    // Update UI
+    function updateUI() {
+      const date = document.getElementById('dateSelector').value;
+      const active = getActiveExercises();
+
+      if (active.length === 0) {
+        document.getElementById('exercisesList').innerHTML = `
+          <div class="empty-state">
+            <p>Пока нет активных упражнений. Добавь первое! 🎯</p>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('exercisesList').innerHTML = active.map(ex => {
+        const startDate = new Date(ex.startDate);
+        const selectedDate = new Date(date);
+        const dayNumber = Math.floor((selectedDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const isCompleted = ex.completed && ex.completed[date];
+        const repsValue = (ex.reps && ex.reps[date]) || '';
+
+        return `
+          <div class="exercise-card ${isCompleted ? 'completed' : ''}">
+            <h3 class="exercise-title">${ex.name}</h3>
+            <p class="exercise-subtitle">День ${dayNumber} из 30 | ${isCompleted ? '✅ Выполнено' : '⏳ Ожидается'}</p>
+
+            ${ex.link ? `<a href="${ex.link}" target="_blank" class="video-link">🔗 Открыть видео</a>` : ''}
+
+            <div class="exercise-input">
+              <label>Количество повторений/подходов:</label>
+              <textarea id="reps-${ex.id}" placeholder="Например: 10, 12, 15 или 30 сек">${repsValue}</textarea>
+            </div>
+
+            <div class="exercise-buttons">
+              <button class="btn ${isCompleted ? 'btn-success' : 'btn-primary'}" onclick="completeExercise('${ex.id}')">
+                ${isCompleted ? '✅ Выполнено' : '⭕ Отметить как выполненное'}
+              </button>
+              <button class="btn btn-danger" onclick="deleteExercise('${ex.id}')">🗑️ Удалить</button>
+            </div>
+            <div class="sync-indicator">☁️ Синхронизировано с облаком</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update Stats
+    function updateStats() {
+      const active = getActiveExercises();
+      const stats = exercises.map(ex => {
+        const completed = (ex.completed && Object.keys(ex.completed).length) || 0;
+        const startDate = new Date(ex.startDate);
+        const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const total = Math.min(daysElapsed, 30);
+        const percentage = Math.round((completed / total) * 100);
+        return { name: ex.name, completed, total, percentage };
+      });
+
+      document.getElementById('totalExercises').textContent = exercises.length;
+      document.getElementById('activeExercises').textContent = active.length;
+
+      const avgPercent = stats.length > 0 ? Math.round(stats.reduce((a, b) => a + b.percentage, 0) / stats.length) : 0;
+      document.getElementById('avgProgress').textContent = avgPercent + '%';
+
+      document.getElementById('progressList').innerHTML = stats.map(stat => `
+        <div class="progress-item">
+          <div class="progress-info">
+            <p>${stat.name}</p>
+            <small>${stat.completed} из ${stat.total} дней</small>
+          </div>
+          <div class="progress-percent">${stat.percentage}%</div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
