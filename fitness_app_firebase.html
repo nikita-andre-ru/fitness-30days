@@ -1,33 +1,34 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💪 30-дневные упражнения</title>
-  <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  
+  <title>30-дневные упражнения Pro</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --surface-0: #fcfcfb;
       --surface-1: #f5f5f4;
       --surface-2: #ffffff;
       --text-primary: #0b0b0b;
       --text-secondary: #52514e;
+      --text-muted: #898781;
       --border: rgba(11, 11, 11, 0.10);
       --fill-accent: #2a78d6;
       --on-accent: #ffffff;
+      --bg-accent: #e6f1fb;
+      --text-accent: #185fa5;
+      --bg-success: #e8f5e9;
+      --text-success: #2e7d32;
+      --bg-warning: #fff3e0;
+      --text-warning: #e65100;
+      --bg-error: #ffebee;
+      --text-error: #c62828;
       --radius: 8px;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
         --surface-0: #0b0b0b;
@@ -35,372 +36,232 @@
         --surface-2: #2c2c2a;
         --text-primary: #ffffff;
         --text-secondary: #c3c2b7;
+        --text-muted: #898781;
         --border: rgba(255, 255, 255, 0.10);
+        --bg-accent: #0c447c;
+        --text-accent: #85b7eb;
+        --bg-success: #1b5e20;
+        --text-success: #81c784;
+        --bg-warning: #e65100;
+        --text-warning: #ffb74d;
+        --bg-error: #b71c1c;
+        --text-error: #ef5350;
       }
     }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--surface-0);
       color: var(--text-primary);
       line-height: 1.6;
     }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .auth-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
+    .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
     .auth-box {
       background: var(--surface-2);
       padding: 40px;
       border-radius: 12px;
       border: 0.5px solid var(--border);
       max-width: 400px;
+    }
+    .auth-box h1 { font-size: 28px; margin-bottom: 8px; }
+    .auth-box p { color: var(--text-secondary); margin-bottom: 24px; font-size: 14px; }
+    .google-btn {
       width: 100%;
-    }
-
-    .auth-box h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .auth-box p {
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .auth-input {
-      margin-bottom: 16px;
-    }
-
-    .auth-input label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-
-    .auth-input input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 0.5px solid var(--border);
+      padding: 12px 24px;
+      background: white;
+      border: 1px solid #dadce0;
       border-radius: var(--radius);
-      font-size: 14px;
-      background: var(--surface-1);
-      color: var(--text-primary);
-      font-family: inherit;
-    }
-
-    .auth-buttons {
-      display: grid;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 8px;
     }
-
-    .auth-btn {
-      padding: 12px 24px;
+    .app-screen { display: none; }
+    .app-screen.active { display: block; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .header h1 { font-size: 24px; font-weight: 500; }
+    .logout-btn {
+      padding: 8px 16px;
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 0.5px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: var(--fill-accent);
+      border-bottom-color: var(--fill-accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface-2);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .card.conflict {
+      border-color: var(--text-error);
+      background: var(--bg-error);
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+    .card-title { font-size: 16px; font-weight: 500; margin: 0; }
+    .card-subtitle { font-size: 13px; color: var(--text-secondary); margin: 4px 0 0; }
+    .time-badge {
+      background: var(--fill-accent);
+      color: var(--on-accent);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .btn {
+      padding: 10px 16px;
+      background: var(--fill-accent);
+      color: var(--on-accent);
       border: none;
       border-radius: var(--radius);
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      margin-top: 12px;
+      width: 100%;
     }
-
-    .btn-primary {
-      background: var(--fill-accent);
-      color: var(--on-accent);
-    }
-
     .btn-secondary {
       background: var(--surface-1);
       color: var(--text-primary);
       border: 0.5px solid var(--border);
     }
-
-    .auth-message {
-      margin-top: 16px;
-      padding: 12px;
-      background: var(--surface-1);
-      border-radius: var(--radius);
-      font-size: 13px;
-      text-align: center;
-      color: var(--text-secondary);
-    }
-
-    .app-screen {
-      display: none;
-    }
-
-    .app-screen.active {
-      display: block;
-    }
-
-    .header {
-      margin-bottom: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-    }
-
-    .header-left h1 {
-      font-size: 28px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    .header-left p {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-
-    .user-info {
-      text-align: right;
-    }
-
-    .user-email {
-      color: var(--text-secondary);
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .logout-btn {
-      padding: 6px 12px;
-      background: var(--surface-1);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 12px;
-      color: var(--text-primary);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      padding: 8px 16px;
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      background: var(--surface-1);
-      color: var(--text-primary);
-    }
-
-    .tab-btn.active {
-      background: var(--fill-accent);
-      color: var(--on-accent);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .add-btn {
-      width: 100%;
-      padding: 12px 24px;
-      background: var(--fill-accent);
-      color: var(--on-accent);
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 24px;
-    }
-
-    .date-selector {
-      background: var(--surface-2);
-      padding: 16px;
-      border-radius: 12px;
-      border: 0.5px solid var(--border);
-      margin-bottom: 24px;
-    }
-
-    .date-selector input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 14px;
-      background: var(--surface-1);
-      color: var(--text-primary);
-    }
-
-    .exercises-grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .exercise-card {
-      background: var(--surface-2);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      border-left: 4px solid #2a78d6;
-    }
-
-    .exercise-card.completed {
-      border-left-color: #0ca30c;
-    }
-
-    .exercise-title {
-      font-size: 16px;
-      font-weight: 500;
-      margin: 0 0 4px;
-    }
-
-    .exercise-subtitle {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin: 0 0 12px;
-    }
-
-    .exercise-input textarea {
-      width: 100%;
-      padding: 8px 12px;
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 14px;
-      background: var(--surface-1);
-      color: var(--text-primary);
-      font-family: inherit;
-      min-height: 60px;
-      resize: vertical;
-      margin-bottom: 12px;
-    }
-
-    .exercise-buttons {
-      display: grid;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      width: 100%;
-    }
-
-    .btn-success {
-      background: #0ca30c;
-      color: white;
-    }
-
     .btn-danger {
-      background: var(--surface-1);
-      color: var(--text-primary);
-      border: 0.5px solid var(--border);
+      background: var(--bg-error);
+      color: var(--text-error);
+    }
+    .btn-small {
+      padding: 6px 12px;
       font-size: 12px;
+      margin-top: 0;
+      width: auto;
+      margin-left: 8px;
     }
-
-    .empty-state {
-      background: var(--surface-2);
-      padding: 32px;
-      border-radius: 12px;
-      text-align: center;
+    .btn-success {
+      background: var(--bg-success);
+      color: var(--text-success);
+    }
+    .exercise-item {
+      background: var(--surface-1);
       border: 0.5px solid var(--border);
-    }
-
-    .stats-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
       gap: 12px;
+    }
+    .exercise-item.completed {
+      background: var(--bg-success);
+      border-color: var(--text-success);
+    }
+    .exercise-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--fill-accent);
+    }
+    .exercise-info {
+      flex: 1;
+    }
+    .exercise-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .exercise-reps {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .exercise-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
       margin-bottom: 24px;
     }
-
-    .stat-card {
+    .day-cell {
       background: var(--surface-1);
-      padding: 16px;
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .day-cell.selected {
+      background: var(--bg-accent);
+      border-color: var(--fill-accent);
+      color: var(--text-accent);
+      font-weight: 500;
+    }
+    .day-cell.conflict {
+      background: var(--bg-error);
+      border-color: var(--text-error);
+    }
+    .day-cell small { display: block; font-size: 11px; color: var(--text-secondary); }
+    .time-slot {
+      background: var(--surface-1);
       border: 0.5px solid var(--border);
-    }
-
-    .stat-label {
-      margin: 0 0 8px;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .stat-value {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 500;
-    }
-
-    .progress-list {
-      background: var(--surface-2);
-      padding: 16px;
-      border-radius: 12px;
-      border: 0.5px solid var(--border);
-    }
-
-    .progress-list h3 {
-      margin: 0 0 16px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .progress-item {
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px;
-      background: var(--surface-1);
-      border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      margin-bottom: 8px;
     }
-
-    .progress-info p {
-      margin: 0;
-      font-size: 14px;
+    .time-slot.conflict {
+      background: var(--bg-error);
+      border-color: var(--text-error);
+    }
+    .time-text {
       font-weight: 500;
+      font-size: 14px;
     }
-
-    .progress-info small {
-      margin: 4px 0 0;
+    .time-content {
+      font-size: 13px;
       color: var(--text-secondary);
-      font-size: 12px;
-      display: block;
     }
-
-    .progress-percent {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--surface-2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      font-size: 14px;
-      color: #0ca30c;
-    }
-
     .modal {
       display: none;
       position: fixed;
@@ -408,44 +269,35 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
     }
-
-    .modal.active {
-      display: flex;
-    }
-
+    .modal.active { display: flex; align-items: center; justify-content: center; }
     .modal-content {
       background: var(--surface-2);
       border-radius: 12px;
       padding: 24px;
-      max-width: 500px;
-      width: 100%;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
       border: 0.5px solid var(--border);
     }
-
-    .modal-content h2 {
-      margin: 0 0 16px;
-      font-size: 20px;
-      font-weight: 500;
-    }
-
+    .modal-header { margin-bottom: 16px; }
+    .modal-header h2 { font-size: 20px; font-weight: 500; margin: 0 0 4px; }
+    .modal-header p { color: var(--text-secondary); margin: 0; font-size: 13px; }
     .modal-input {
       margin-bottom: 16px;
     }
-
     .modal-input label {
       display: block;
       font-size: 13px;
       font-weight: 500;
       margin-bottom: 6px;
     }
-
-    .modal-input input {
+    .modal-input input,
+    .modal-input select,
+    .modal-input textarea {
       width: 100%;
       padding: 8px 12px;
       border: 0.5px solid var(--border);
@@ -455,185 +307,201 @@
       color: var(--text-primary);
       font-family: inherit;
     }
-
+    .modal-input textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
     .modal-buttons {
       display: flex;
       gap: 8px;
+      margin-top: 24px;
     }
-
     .modal-buttons button {
       flex: 1;
-      padding: 10px 16px;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
+      padding: 10px;
     }
-
-    .modal-buttons .btn-primary {
-      background: var(--fill-accent);
-      color: var(--on-accent);
-    }
-
-    .modal-buttons .btn-secondary {
-      background: var(--surface-1);
-      color: var(--text-primary);
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
       border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-1);
     }
-
-    .video-link {
-      display: inline-block;
-      color: var(--fill-accent);
-      text-decoration: none;
-      font-size: 14px;
+    .search-item {
       padding: 8px 12px;
-      background: var(--surface-1);
-      border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      margin-bottom: 12px;
-    }
-
-    .info-box {
-      background: var(--surface-1);
-      padding: 12px;
-      border-radius: var(--radius);
+      border-bottom: 0.5px solid var(--border);
+      cursor: pointer;
       font-size: 13px;
+    }
+    .search-item:hover {
+      background: var(--surface-2);
+    }
+    .search-item:last-child {
+      border-bottom: none;
+    }
+    .exercise-list-item {
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .warning-badge {
+      background: var(--bg-warning);
+      color: var(--text-warning);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
       margin-top: 12px;
+    }
+    .error-badge {
+      background: var(--bg-error);
+      color: var(--text-error);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    .loading { text-align: center; color: var(--text-secondary); }
+    .empty-state {
+      text-align: center;
+      padding: 32px;
       color: var(--text-secondary);
     }
-
-    @media (max-width: 600px) {
-      .header {
-        flex-direction: column;
-        gap: 16px;
-      }
-
-      .header-left h1 {
-        font-size: 24px;
-      }
-
-      .stats-cards {
-        grid-template-columns: 1fr;
-      }
+    .progress-bar {
+      background: var(--surface-1);
+      border-radius: 4px;
+      height: 8px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: var(--fill-accent);
+      height: 100%;
+      transition: width 0.3s;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <!-- Auth Screen -->
   <div id="authScreen" class="auth-screen">
     <div class="auth-box">
-      <h1>💪 30-дневные упражнения</h1>
-      <p>Облачная синхронизация на все устройства</p>
-      
-      <div class="auth-input">
-        <label>Email:</label>
-        <input type="email" id="authEmail" placeholder="andreevnik82@gmail.com" value="andreevnik82@gmail.com">
-      </div>
-
-      <div class="auth-input">
-        <label>Пароль:</label>
-        <input type="password" id="authPassword" placeholder="Придумай пароль">
-      </div>
-
-      <div class="auth-buttons">
-        <button class="auth-btn btn-primary" onclick="signup()">📝 Создать аккаунт</button>
-        <button class="auth-btn btn-secondary" onclick="login()">🔐 Вход</button>
-      </div>
-
-      <div class="auth-message">
-        💡 Используй любой пароль. Данные будут синхронизироваться в облаке Firebase.
-      </div>
+      <h1>30-дневные упражнения Pro</h1>
+      <p>Система тренировок с блоками и расписанием</p>
+      <button class="google-btn" onclick="loginWithGoogle()">Вход через Google</button>
     </div>
   </div>
 
-  <!-- App Screen -->
   <div id="appScreen" class="app-screen">
     <div class="container">
-      <!-- Header -->
       <div class="header">
-        <div class="header-left">
-          <h1>💪 30-дневные упражнения</h1>
-          <p>Облачная синхронизация на все устройства</p>
-        </div>
-        <div class="user-info">
-          <div class="user-email" id="userEmail"></div>
-          <button class="logout-btn" onclick="logout()">Выход</button>
-        </div>
+        <h1>30-дневные упражнения</h1>
+        <button class="logout-btn" onclick="logout()">Выход</button>
       </div>
 
-      <!-- Tabs -->
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('exercises')">📋 Упражнения</button>
+        <button class="tab-btn active" onclick="switchTab('dashboard')">📅 Сегодня</button>
+        <button class="tab-btn" onclick="switchTab('blocks')">📋 Блоки</button>
+        <button class="tab-btn" onclick="switchTab('schedule')">🗓️ Расписание</button>
         <button class="tab-btn" onclick="switchTab('stats')">📊 Статистика</button>
       </div>
 
-      <!-- Exercises Tab -->
-      <div id="exercises" class="tab-content active">
-        <button class="add-btn" onclick="openModal()">+ Добавить упражнение на 30 дней</button>
-
-        <div class="date-selector">
-          <label>Дата для отслеживания:</label>
-          <input type="date" id="dateSelector" onchange="updateUI()">
-        </div>
-
-        <div id="exercisesList" class="exercises-grid">
-          <div class="empty-state">
-            <p>⏳ Загрузка данных...</p>
-          </div>
-        </div>
+      <div id="dashboard" class="tab-content active">
+        <div id="dashboardContent"></div>
       </div>
 
-      <!-- Stats Tab -->
-      <div id="stats" class="tab-content">
-        <div class="stats-cards">
-          <div class="stat-card">
-            <p class="stat-label">Всего упражнений</p>
-            <p class="stat-value" id="totalExercises">0</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Активных</p>
-            <p class="stat-value" id="activeExercises">0</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Средний прогресс</p>
-            <p class="stat-value" id="avgProgress">0%</p>
-          </div>
-        </div>
+      <div id="blocks" class="tab-content">
+        <button class="btn" onclick="openBlockModal()">+ Создать блок упражнений</button>
+        <div id="blocksList" class="grid-2" style="margin-top: 24px;"></div>
+      </div>
 
-        <div class="progress-list">
-          <h3>🎯 Прогресс по упражнениям</h3>
-          <div id="progressList"></div>
-        </div>
+      <div id="schedule" class="tab-content">
+        <h3>Неделя упражнений</h3>
+        <div class="schedule-grid" id="scheduleGrid"></div>
+        <div id="scheduleContent"></div>
+      </div>
+
+      <div id="stats" class="tab-content">
+        <div id="statsContent"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal" class="modal">
+  <div id="blockModal" class="modal">
     <div class="modal-content">
-      <h2>Добавить упражнение</h2>
-
-      <div class="modal-input">
-        <label>Название упражнения *</label>
-        <input type="text" id="exerciseName" placeholder="Например: Отжимания, Пресс, Растяжка...">
+      <div class="modal-header">
+        <h2 id="blockModalTitle">Новый блок упражнений</h2>
       </div>
+      <div id="blockConflictWarning"></div>
+      <div class="modal-input">
+        <label>Название блока</label>
+        <input type="text" id="blockName" placeholder="Например: Верхний пресс">
+      </div>
+      <div class="modal-input">
+        <label>День недели</label>
+        <select id="blockDay" onchange="checkBlockConflict()">
+          <option value="0">Понедельник</option>
+          <option value="1">Вторник</option>
+          <option value="2">Среда</option>
+          <option value="3">Четверг</option>
+          <option value="4">Пятница</option>
+          <option value="5">Суббота</option>
+          <option value="6">Воскресенье</option>
+        </select>
+      </div>
+      <div class="modal-input">
+        <label>Время тренировки</label>
+        <input type="time" id="blockTime" onchange="checkBlockConflict()">
+      </div>
+      <div class="modal-input">
+        <label>Упражнения в блоке</label>
+        <div id="exercisesList"></div>
+        <button class="btn-secondary btn-small" onclick="openExerciseSearch()">+ Добавить упражнение</button>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn" onclick="saveBlock()">Сохранить</button>
+        <button class="btn btn-secondary" onclick="closeBlockModal()">Отмена</button>
+      </div>
+    </div>
+  </div>
 
+  <div id="exerciseSearchModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Добавить упражнение</h2>
+      </div>
+      <div class="modal-input">
+        <label>Название упражнения</label>
+        <input type="text" id="exerciseName" placeholder="Например: Отжимания">
+      </div>
       <div class="modal-input">
         <label>YouTube ссылка (опционально)</label>
-        <input type="text" id="youtubeLink" placeholder="https://www.youtube.com/watch?v=...">
-        <small style="margin-top: 4px; color: var(--text-secondary); display: block;">💡 Вставь ссылку на видео</small>
+        <input type="text" id="exerciseLink" placeholder="https://youtube.com/watch?v=...">
       </div>
-
+      <div class="modal-input">
+        <label>Повторения / подходы</label>
+        <input type="text" id="exerciseReps" placeholder="10, 12, 15 или 30 сек">
+      </div>
       <div class="modal-buttons">
-        <button class="btn-primary" onclick="addExercise()">✅ Добавить</button>
-        <button class="btn-secondary" onclick="closeModal()">❌ Отмена</button>
+        <button class="btn" onclick="addExerciseToBlock()">Добавить</button>
+        <button class="btn btn-secondary" onclick="closeExerciseSearch()">Отмена</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDV0T_346njOcPhQXEpaK9Q6sUVweQRf4A",
       authDomain: "fitness30days-8b374.firebaseapp.com",
@@ -644,241 +512,384 @@
       appId: "1:333978741784:web:a38b3add8660407600a76d"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const database = firebase.database();
+    const db = firebase.database();
 
-    let exercises = [];
     let currentUser = null;
+    let blocks = [];
+    let tempExercises = [];
+    let editingBlockId = null;
+    const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
-    // Auth State
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
-        document.getElementById('userEmail').textContent = user.email;
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
-        
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dateSelector').value = today;
-        
-        loadExercises();
+        requestNotificationPermission();
+        loadBlocks();
       } else {
-        currentUser = null;
         document.getElementById('authScreen').style.display = 'flex';
         document.getElementById('appScreen').classList.remove('active');
       }
     });
 
-    // Login
-    function login() {
-      const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authPassword').value;
-
-      if (!email || !password) {
-        alert('Введи email и пароль');
-        return;
+    function requestNotificationPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
       }
-
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          alert('Ошибка входа: ' + error.message);
-        });
     }
 
-    // Signup
-    function signup() {
-      const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authPassword').value;
-
-      if (!email || !password) {
-        alert('Введи email и пароль');
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .catch(error => {
-          alert('Ошибка регистрации: ' + error.message);
-        });
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
     }
 
-    // Logout
     function logout() {
       auth.signOut();
     }
 
-    // Load Exercises
-    function loadExercises() {
-      if (!currentUser) return;
-
-      database.ref(`users/${currentUser.uid}/exercises`).on('value', (snapshot) => {
-        exercises = [];
-        if (snapshot.exists()) {
-          snapshot.forEach((child) => {
-            exercises.push({
-              id: child.key,
-              ...child.val()
-            });
-          });
-        }
-        updateUI();
-      });
-    }
-
-    // Add Exercise
-    function addExercise() {
-      const name = document.getElementById('exerciseName').value.trim();
-      const link = document.getElementById('youtubeLink').value.trim();
-
-      if (!name) {
-        alert('Введи название упражнения!');
-        return;
-      }
-
-      if (!currentUser) return;
-
-      const newExercise = {
-        name,
-        link,
-        startDate: new Date().toISOString().split('T')[0],
-        completed: {},
-        reps: {}
-      };
-
-      database.ref(`users/${currentUser.uid}/exercises`).push(newExercise)
-        .then(() => {
-          closeModal();
-          document.getElementById('exerciseName').value = '';
-          document.getElementById('youtubeLink').value = '';
-        })
-        .catch(error => alert('Ошибка: ' + error.message));
-    }
-
-    // Complete Exercise
-    function completeExercise(id) {
-      if (!currentUser) return;
-
-      const date = document.getElementById('dateSelector').value;
-      const reps = document.getElementById(`reps-${id}`).value;
-
-      database.ref(`users/${currentUser.uid}/exercises/${id}/completed/${date}`).set(true);
-      database.ref(`users/${currentUser.uid}/exercises/${id}/reps/${date}`).set(reps);
-    }
-
-    // Delete Exercise
-    function deleteExercise(id) {
-      if (!confirm('Удалить это упражнение?')) return;
-      if (!currentUser) return;
-
-      database.ref(`users/${currentUser.uid}/exercises/${id}`).remove()
-        .catch(error => alert('Ошибка: ' + error.message));
-    }
-
-    // Get Active Exercises
-    function getActiveExercises() {
-      return exercises.filter(ex => {
-        const startDate = new Date(ex.startDate);
-        const today = new Date();
-        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-        return daysElapsed < 30;
-      });
-    }
-
-    // Switch Tab
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tab).classList.add('active');
-      document.querySelector(`[onclick*="'${tab}'"]`).classList.add('active');
-      if (tab === 'stats') updateStats();
+      event.target.classList.add('active');
+      if (tab === 'dashboard') renderDashboard();
+      if (tab === 'schedule') renderSchedule();
+      if (tab === 'stats') renderStats();
     }
 
-    // Modal
-    function openModal() {
-      document.getElementById('modal').classList.add('active');
-      document.getElementById('exerciseName').focus();
+    function loadBlocks() {
+      if (!currentUser) return;
+      db.ref(`users/${currentUser.uid}/blocks`).on('value', snapshot => {
+        blocks = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            blocks.push({ id: child.key, ...child.val() });
+          });
+        }
+        renderBlocks();
+        renderDashboard();
+      });
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
+    function getTodayIndex() {
+      return new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
     }
 
-    document.getElementById('modal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('modal')) closeModal();
-    });
+    function getTodayDateStr() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    }
 
-    // Update UI
-    function updateUI() {
-      const date = document.getElementById('dateSelector').value;
-      const active = getActiveExercises();
+    function renderDashboard() {
+      const todayIndex = getTodayIndex();
+      const todayBlocks = blocks.filter(b => b.dayOfWeek === todayIndex);
+      const today = new Date();
+      const dayStr = dayNames[todayIndex];
+      const dateStr = today.toLocaleDateString('ru-RU', {month: 'long', day: 'numeric'});
 
-      if (active.length === 0) {
-        document.getElementById('exercisesList').innerHTML = `
-          <div class="empty-state">
-            <p>Пока нет активных упражнений. Добавь первое! 🎯</p>
+      let html = `<h2>${dayStr}, ${dateStr}</h2>`;
+
+      if (todayBlocks.length === 0) {
+        html += '<div class="empty-state">Нет упражнений на сегодня</div>';
+      } else {
+        const todayDateStr = getTodayDateStr();
+        const completedCount = todayBlocks.filter(b => b.completed && b.completed[todayDateStr]).length;
+        
+        html += `<div class="stat-row">
+          <span>Выполнено блоков:</span>
+          <strong>${completedCount}/${todayBlocks.length}</strong>
+        </div>`;
+        
+        html += '<div class="progress-bar"><div class="progress-fill" style="width: ' + 
+          (todayBlocks.length > 0 ? Math.round(completedCount / todayBlocks.length * 100) : 0) + '%"></div></div>';
+
+        html += '<div style="margin-top: 24px;">';
+        todayBlocks.forEach((block, idx) => {
+          const isCompleted = block.completed && block.completed[todayDateStr];
+          html += `
+            <div class="card ${block.conflict ? 'conflict' : ''}" style="margin-bottom: 16px;">
+              <div class="card-header">
+                <div>
+                  <div class="time-badge">${block.time}</div>
+                  <p class="card-title">${block.name}</p>
+                  <p class="card-subtitle">${(block.exercises || []).length} упражнений</p>
+                </div>
+                <input type="checkbox" class="exercise-checkbox" ${isCompleted ? 'checked' : ''} 
+                  onchange="toggleBlockCompletion('${block.id}', this.checked)">
+              </div>
+              <div style="margin-top: 12px;">
+                ${(block.exercises || []).map((ex, exIdx) => {
+                  const exCompleted = block.exerciseCompleted && block.exerciseCompleted[exIdx];
+                  return `
+                    <div class="exercise-item ${exCompleted ? 'completed' : ''}">
+                      <input type="checkbox" class="exercise-checkbox" ${exCompleted ? 'checked' : ''} 
+                        onchange="toggleExerciseCompletion('${block.id}', ${exIdx}, this.checked)">
+                      <div class="exercise-info">
+                        <div class="exercise-name">${ex.name}</div>
+                        <div class="exercise-reps">${ex.reps}</div>
+                      </div>
+                      ${ex.link ? `<a href="${ex.link}" target="_blank" style="font-size: 12px; text-decoration: none; color: var(--text-accent);">🎥</a>` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+              ${block.conflict ? `<div class="error-badge">⚠️ Конфликт времени!</div>` : ''}
+            </div>
+          `;
+        });
+        html += '</div>';
+      }
+
+      document.getElementById('dashboardContent').innerHTML = html;
+    }
+
+    function toggleBlockCompletion(blockId, isCompleted) {
+      const todayDateStr = getTodayDateStr();
+      db.ref(`users/${currentUser.uid}/blocks/${blockId}/completed/${todayDateStr}`).set(isCompleted || null);
+    }
+
+    function toggleExerciseCompletion(blockId, exIdx, isCompleted) {
+      const todayDateStr = getTodayDateStr();
+      const path = `users/${currentUser.uid}/blocks/${blockId}/exerciseCompleted/${todayDateStr}/${exIdx}`;
+      db.ref(path).set(isCompleted || null);
+    }
+
+    function renderBlocks() {
+      const html = blocks.map(block => `
+        <div class="card ${block.conflict ? 'conflict' : ''}">
+          <div class="card-header">
+            <div>
+              <div class="time-badge">${block.time} • ${dayNames[block.dayOfWeek]}</div>
+              <p class="card-title">${block.name}</p>
+              <p class="card-subtitle">${(block.exercises || []).length} упражнений</p>
+            </div>
+          </div>
+          <div style="margin-top: 12px; font-size: 13px;">
+            ${(block.exercises || []).map(ex => `
+              <div style="margin: 8px 0; display: flex; gap: 8px;">
+                <span>•</span>
+                <span><strong>${ex.name}</strong> (${ex.reps})</span>
+              </div>
+            `).join('')}
+          </div>
+          ${block.conflict ? `<div class="error-badge">⚠️ Конфликт времени!</div>` : ''}
+          <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <button class="btn-small btn-secondary" onclick="editBlock('${block.id}')">Изменить</button>
+            <button class="btn-small btn-danger" onclick="deleteBlock('${block.id}')">Удалить</button>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('blocksList').innerHTML = html || '<div class="empty-state">Нет блоков. Создайте первый!</div>';
+    }
+
+    function checkTimeConflict(blockId, time, dayOfWeek) {
+      return blocks.find(b => 
+        b.dayOfWeek == dayOfWeek && 
+        b.time === time && 
+        b.id !== blockId
+      );
+    }
+
+    function checkBlockConflict() {
+      const time = document.getElementById('blockTime').value;
+      const dayOfWeek = document.getElementById('blockDay').value;
+      const conflicting = checkTimeConflict(editingBlockId || 'new', time, dayOfWeek);
+      
+      const warningEl = document.getElementById('blockConflictWarning');
+      if (conflicting) {
+        warningEl.innerHTML = `
+          <div class="error-badge">
+            ⚠️ <strong>Конфликт времени!</strong><br>
+            На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflicting.name}"
           </div>
         `;
+      } else {
+        warningEl.innerHTML = '';
+      }
+    }
+
+    function openBlockModal() {
+      editingBlockId = null;
+      tempExercises = [];
+      document.getElementById('blockName').value = '';
+      document.getElementById('blockTime').value = '10:00';
+      document.getElementById('blockDay').value = '0';
+      document.getElementById('blockConflictWarning').innerHTML = '';
+      document.getElementById('blockModalTitle').textContent = 'Новый блок упражнений';
+      updateExercisesList();
+      document.getElementById('blockModal').classList.add('active');
+    }
+
+    function editBlock(blockId) {
+      editingBlockId = blockId;
+      const block = blocks.find(b => b.id === blockId);
+      document.getElementById('blockName').value = block.name;
+      document.getElementById('blockTime').value = block.time;
+      document.getElementById('blockDay').value = block.dayOfWeek || 0;
+      tempExercises = block.exercises ? JSON.parse(JSON.stringify(block.exercises)) : [];
+      document.getElementById('blockModalTitle').textContent = 'Изменить блок';
+      document.getElementById('blockConflictWarning').innerHTML = '';
+      updateExercisesList();
+      document.getElementById('blockModal').classList.add('active');
+    }
+
+    function closeBlockModal() {
+      document.getElementById('blockModal').classList.remove('active');
+    }
+
+    function openExerciseSearch() {
+      document.getElementById('exerciseName').value = '';
+      document.getElementById('exerciseLink').value = '';
+      document.getElementById('exerciseReps').value = '';
+      document.getElementById('exerciseSearchModal').classList.add('active');
+    }
+
+    function closeExerciseSearch() {
+      document.getElementById('exerciseSearchModal').classList.remove('active');
+    }
+
+    function addExerciseToBlock() {
+      const name = document.getElementById('exerciseName').value.trim();
+      const link = document.getElementById('exerciseLink').value.trim();
+      const reps = document.getElementById('exerciseReps').value.trim() || '10';
+
+      if (!name) {
+        alert('Введите название упражнения');
         return;
       }
 
-      document.getElementById('exercisesList').innerHTML = active.map(ex => {
-        const startDate = new Date(ex.startDate);
-        const selectedDate = new Date(date);
-        const dayNumber = Math.floor((selectedDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        const isCompleted = ex.completed && ex.completed[date];
-        const repsValue = (ex.reps && ex.reps[date]) || '';
+      tempExercises.push({ name, link, reps });
+      updateExercisesList();
+      closeExerciseSearch();
+    }
 
+    function removeExercise(index) {
+      tempExercises.splice(index, 1);
+      updateExercisesList();
+    }
+
+    function updateExercisesList() {
+      const html = tempExercises.map((ex, i) => `
+        <div class="exercise-list-item">
+          <span><strong>${ex.name}</strong> (${ex.reps})</span>
+          <button class="btn-small btn-danger" onclick="removeExercise(${i})">Удалить</button>
+        </div>
+      `).join('');
+      document.getElementById('exercisesList').innerHTML = html || '<div style="color: var(--text-muted); font-size: 12px;">Упражнений нет</div>';
+    }
+
+    function saveBlock() {
+      const name = document.getElementById('blockName').value.trim();
+      const time = document.getElementById('blockTime').value;
+      const dayOfWeek = document.getElementById('blockDay').value;
+
+      if (!name || !time || tempExercises.length === 0) {
+        alert('Заполните все поля и добавьте упражнения');
+        return;
+      }
+
+      const conflict = checkTimeConflict(editingBlockId || 'new', time, dayOfWeek);
+      if (conflict && !confirm(`На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflict.name}"\n\nВы уверены, что хотите сохранить?`)) {
+        return;
+      }
+
+      const blockData = {
+        name,
+        time,
+        dayOfWeek: parseInt(dayOfWeek),
+        exercises: tempExercises,
+        startDate: new Date().toISOString().split('T')[0],
+        completed: {},
+        conflict: !!conflict
+      };
+
+      if (editingBlockId) {
+        db.ref(`users/${currentUser.uid}/blocks/${editingBlockId}`).update(blockData);
+      } else {
+        db.ref(`users/${currentUser.uid}/blocks`).push(blockData);
+      }
+
+      closeBlockModal();
+      showNotification(`Блок "${name}" сохранен на ${dayNames[dayOfWeek]} в ${time}`);
+    }
+
+    function deleteBlock(blockId) {
+      if (confirm('Удалить этот блок?')) {
+        db.ref(`users/${currentUser.uid}/blocks/${blockId}`).remove();
+      }
+    }
+
+    function showNotification(message) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Упражнения', {
+          body: message,
+          icon: '💪'
+        });
+      }
+    }
+
+    function renderSchedule() {
+      const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      const grid = days.map((day, i) => {
+        const hasConflict = blocks.filter(b => b.dayOfWeek === i && b.conflict).length > 0;
         return `
-          <div class="exercise-card ${isCompleted ? 'completed' : ''}">
-            <h3 class="exercise-title">${ex.name}</h3>
-            <p class="exercise-subtitle">День ${dayNumber} из 30 | ${isCompleted ? '✅ Выполнено' : '⏳ Ожидается'}</p>
-
-            ${ex.link ? `<a href="${ex.link}" target="_blank" class="video-link">🔗 Открыть видео</a>` : ''}
-
-            <div class="exercise-input">
-              <label>Количество повторений:</label>
-              <textarea id="reps-${ex.id}" placeholder="Например: 10, 12, 15">${repsValue}</textarea>
-            </div>
-
-            <div class="exercise-buttons">
-              <button class="btn ${isCompleted ? 'btn-success' : 'btn-primary'}" onclick="completeExercise('${ex.id}')">
-                ${isCompleted ? '✅ Выполнено' : '⭕ Отметить как выполненное'}
-              </button>
-              <button class="btn btn-danger" onclick="deleteExercise('${ex.id}')">🗑️ Удалить</button>
-            </div>
+          <div class="day-cell ${hasConflict ? 'conflict' : ''}" onclick="selectDay(${i})">
+            ${day}
+            <small>${i + 1}</small>
           </div>
         `;
       }).join('');
+      document.getElementById('scheduleGrid').innerHTML = grid;
+      selectDay(0);
     }
 
-    // Update Stats
-    function updateStats() {
-      const active = getActiveExercises();
-      const stats = exercises.map(ex => {
-        const completed = (ex.completed && Object.keys(ex.completed).length) || 0;
-        const startDate = new Date(ex.startDate);
-        const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        const total = Math.min(daysElapsed, 30);
-        const percentage = Math.round((completed / total) * 100);
-        return { name: ex.name, completed, total, percentage };
+    function selectDay(dayIndex) {
+      document.querySelectorAll('.day-cell').forEach((el, i) => {
+        if (i === dayIndex) el.classList.add('selected');
+        else el.classList.remove('selected');
       });
 
-      document.getElementById('totalExercises').textContent = exercises.length;
-      document.getElementById('activeExercises').textContent = active.length;
+      const dayBlocks = blocks.filter(b => b.dayOfWeek === dayIndex);
+      const html = dayBlocks.length > 0
+        ? dayBlocks.map(block => `
+            <div class="time-slot ${block.conflict ? 'conflict' : ''}">
+              <div>
+                <div class="time-text">${block.time}</div>
+                <div class="time-content">${block.name}</div>
+              </div>
+              <button class="btn-small btn-secondary" onclick="editBlock('${block.id}')">Править</button>
+            </div>
+          `).join('')
+        : '<div class="empty-state">Нет тренировок на этот день</div>';
+      document.getElementById('scheduleContent').innerHTML = html;
+    }
 
-      const avgPercent = stats.length > 0 ? Math.round(stats.reduce((a, b) => a + b.percentage, 0) / stats.length) : 0;
-      document.getElementById('avgProgress').textContent = avgPercent + '%';
-
-      document.getElementById('progressList').innerHTML = stats.map(stat => `
-        <div class="progress-item">
-          <div class="progress-info">
-            <p>${stat.name}</p>
-            <small>${stat.completed} из ${stat.total} дней</small>
+    function renderStats() {
+      const totalBlocks = blocks.length;
+      const totalExercises = blocks.reduce((sum, b) => sum + (b.exercises ? b.exercises.length : 0), 0);
+      const conflictBlocks = blocks.filter(b => b.conflict).length;
+      
+      const html = `
+        <div class="grid-2">
+          <div class="card">
+            <p class="card-title">Всего блоков</p>
+            <p style="font-size: 28px; font-weight: 500; margin-top: 8px;">${totalBlocks}</p>
           </div>
-          <div class="progress-percent">${stat.percentage}%</div>
+          <div class="card">
+            <p class="card-title">Упражнений</p>
+            <p style="font-size: 28px; font-weight: 500; margin-top: 8px;">${totalExercises}</p>
+          </div>
+          <div class="card ${conflictBlocks > 0 ? 'conflict' : ''}">
+            <p class="card-title">Конфликты времени</p>
+            <p style="font-size: 28px; font-weight: 500; margin-top: 8px;">${conflictBlocks}</p>
+            ${conflictBlocks > 0 ? `<p style="font-size: 12px; margin-top: 8px; color: var(--text-error);">⚠️ Нужна коррекция</p>` : ''}
+          </div>
         </div>
-      `).join('');
+      `;
+      document.getElementById('statsContent').innerHTML = html;
     }
   </script>
 </body>
