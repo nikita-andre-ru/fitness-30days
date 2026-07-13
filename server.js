@@ -4,7 +4,7 @@ const path = require('path');
 
 const server = http.createServer((req, res) => {
   // Загружаем HTML файл
-  const filePath = path.join(__dirname, 'fitness_app_firebase.html');
+  const filePath = path.join(__dirname, 'index.html');
   
   fs.readFile(filePath, 'utf8', (err, content) => {
     if (err) {
