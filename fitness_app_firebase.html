@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -62,23 +62,74 @@
       border-radius: 12px;
       border: 0.5px solid var(--border);
       max-width: 400px;
+      width: 100%;
     }
     .auth-box h1 { font-size: 28px; margin-bottom: 8px; }
     .auth-box p { color: var(--text-secondary); margin-bottom: 24px; font-size: 14px; }
-    .google-btn {
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+    }
+    .auth-tab-btn.active {
+      color: var(--fill-accent);
+      border-bottom-color: var(--fill-accent);
+    }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+    .form-input {
+      margin-bottom: 16px;
+    }
+    .form-input label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .form-input input {
       width: 100%;
-      padding: 12px 24px;
-      background: white;
-      border: 1px solid #dadce0;
+      padding: 10px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+    }
+    .form-error {
+      background: var(--bg-error);
+      color: var(--text-error);
+      padding: 12px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .form-error.show { display: block; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--fill-accent);
+      color: var(--on-accent);
+      border: none;
       border-radius: var(--radius);
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      margin-bottom: 12px;
     }
+    .btn:hover { opacity: 0.9; }
     .app-screen { display: none; }
     .app-screen.active { display: block; }
     .header {
@@ -146,18 +197,6 @@
       display: inline-block;
       margin-bottom: 12px;
     }
-    .btn {
-      padding: 10px 16px;
-      background: var(--fill-accent);
-      color: var(--on-accent);
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      margin-top: 12px;
-      width: 100%;
-    }
     .btn-secondary {
       background: var(--surface-1);
       color: var(--text-primary);
@@ -173,6 +212,7 @@
       margin-top: 0;
       width: auto;
       margin-left: 8px;
+      margin-bottom: 0;
     }
     .btn-success {
       background: var(--bg-success);
@@ -209,10 +249,6 @@
       font-size: 12px;
       color: var(--text-secondary);
       margin-top: 2px;
-    }
-    .exercise-actions {
-      display: flex;
-      gap: 4px;
     }
     .schedule-grid {
       display: grid;
@@ -285,7 +321,6 @@
     }
     .modal-header { margin-bottom: 16px; }
     .modal-header h2 { font-size: 20px; font-weight: 500; margin: 0 0 4px; }
-    .modal-header p { color: var(--text-secondary); margin: 0; font-size: 13px; }
     .modal-input {
       margin-bottom: 16px;
     }
@@ -319,25 +354,6 @@
     .modal-buttons button {
       flex: 1;
       padding: 10px;
-    }
-    .search-results {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface-1);
-    }
-    .search-item {
-      padding: 8px 12px;
-      border-bottom: 0.5px solid var(--border);
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .search-item:hover {
-      background: var(--surface-2);
-    }
-    .search-item:last-child {
-      border-bottom: none;
     }
     .exercise-list-item {
       background: var(--surface-1);
@@ -398,9 +414,45 @@
 <body>
   <div id="authScreen" class="auth-screen">
     <div class="auth-box">
-      <h1>30-дневные упражнения Pro</h1>
+      <h1>30-дневные упражнения</h1>
       <p>Система тренировок с блоками и расписанием</p>
-      <button class="google-btn" onclick="loginWithGoogle()">Вход через Google</button>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Вход</button>
+        <button class="auth-tab-btn" onclick="switchAuthTab('register')">Регистрация</button>
+      </div>
+
+      <!-- ВХОД -->
+      <div id="loginForm" class="auth-form active">
+        <div class="form-error" id="loginError"></div>
+        <div class="form-input">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-input">
+          <label>Пароль</label>
+          <input type="password" id="loginPassword" placeholder="Минимум 6 символов">
+        </div>
+        <button class="btn" onclick="login()">Войти</button>
+      </div>
+
+      <!-- РЕГИСТРАЦИЯ -->
+      <div id="registerForm" class="auth-form">
+        <div class="form-error" id="registerError"></div>
+        <div class="form-input">
+          <label>Email</label>
+          <input type="email" id="registerEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-input">
+          <label>Пароль</label>
+          <input type="password" id="registerPassword" placeholder="Минимум 6 символов">
+        </div>
+        <div class="form-input">
+          <label>Подтвердить пароль</label>
+          <input type="password" id="registerPasswordConfirm" placeholder="Повтори пароль">
+        </div>
+        <button class="btn" onclick="register()">Зарегистрироваться</button>
+      </div>
     </div>
   </div>
 
@@ -527,7 +579,6 @@
         currentUser = user;
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
-        requestNotificationPermission();
         loadBlocks();
       } else {
         document.getElementById('authScreen').style.display = 'flex';
@@ -535,15 +586,69 @@
       }
     });
 
-    function requestNotificationPermission() {
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
+    function switchAuthTab(tab) {
+      document.querySelectorAll('.auth-form').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.auth-tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
+      event.target.classList.add('active');
+      document.getElementById('loginError').classList.remove('show');
+      document.getElementById('registerError').classList.remove('show');
     }
 
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
+    function login() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      if (!email || !password) {
+        showError(errorEl, 'Заполни email и пароль');
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+          let message = 'Ошибка при входе';
+          if (error.code === 'auth/user-not-found') message = 'Пользователь не найден';
+          if (error.code === 'auth/wrong-password') message = 'Неверный пароль';
+          if (error.code === 'auth/invalid-email') message = 'Неверный email';
+          showError(errorEl, message);
+        });
+    }
+
+    function register() {
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+      const errorEl = document.getElementById('registerError');
+
+      if (!email || !password || !passwordConfirm) {
+        showError(errorEl, 'Заполни все поля');
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        showError(errorEl, 'Пароли не совпадают');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError(errorEl, 'Пароль должен быть минимум 6 символов');
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .catch(error => {
+          let message = 'Ошибка при регистрации';
+          if (error.code === 'auth/email-already-in-use') message = 'Email уже зарегистрирован';
+          if (error.code === 'auth/invalid-email') message = 'Неверный email';
+          if (error.code === 'auth/weak-password') message = 'Пароль слишком слабый';
+          showError(errorEl, message);
+        });
+    }
+
+    function showError(el, message) {
+      el.textContent = message;
+      el.classList.add('show');
     }
 
     function logout() {
@@ -622,7 +727,7 @@
               </div>
               <div style="margin-top: 12px;">
                 ${(block.exercises || []).map((ex, exIdx) => {
-                  const exCompleted = block.exerciseCompleted && block.exerciseCompleted[exIdx];
+                  const exCompleted = block.exerciseCompleted && block.exerciseCompleted[todayDateStr] && block.exerciseCompleted[todayDateStr][exIdx];
                   return `
                     <div class="exercise-item ${exCompleted ? 'completed' : ''}">
                       <input type="checkbox" class="exercise-checkbox" ${exCompleted ? 'checked' : ''} 
@@ -813,21 +918,11 @@
       }
 
       closeBlockModal();
-      showNotification(`Блок "${name}" сохранен на ${dayNames[dayOfWeek]} в ${time}`);
     }
 
     function deleteBlock(blockId) {
       if (confirm('Удалить этот блок?')) {
         db.ref(`users/${currentUser.uid}/blocks/${blockId}`).remove();
-      }
-    }
-
-    function showNotification(message) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Упражнения', {
-          body: message,
-          icon: '💪'
-        });
       }
     }
 
