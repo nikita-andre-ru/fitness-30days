@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>💪 30-дневные упражнения (облако)</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+  <!-- Firebase v8 Compat (старая версия - работает стабильно) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
   <style>
     * {
       margin: 0;
@@ -101,7 +103,6 @@
 
     .google-btn:hover {
       background: #f8f9fa;
-      border-color: #dadce0;
     }
 
     .app-screen {
@@ -150,10 +151,6 @@
       color: var(--text-primary);
     }
 
-    .logout-btn:hover {
-      background: var(--surface-2);
-    }
-
     .tabs {
       display: flex;
       gap: 8px;
@@ -179,10 +176,6 @@
       border-color: var(--fill-accent);
     }
 
-    .tab-btn:hover {
-      background: var(--surface-1);
-    }
-
     .tab-content {
       display: none;
     }
@@ -202,11 +195,6 @@
       font-size: 15px;
       font-weight: 500;
       margin-bottom: 24px;
-      transition: opacity 0.2s;
-    }
-
-    .add-btn:hover {
-      opacity: 0.9;
     }
 
     .date-selector {
@@ -222,7 +210,6 @@
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 8px;
-      color: var(--text-primary);
     }
 
     .date-selector input {
@@ -257,7 +244,6 @@
       font-size: 16px;
       font-weight: 500;
       margin: 0 0 4px;
-      color: var(--text-primary);
     }
 
     .exercise-subtitle {
@@ -273,11 +259,9 @@
     }
 
     .exercise-input label {
-      display: block;
       font-size: 13px;
       font-weight: 500;
       margin-bottom: 6px;
-      color: var(--text-primary);
     }
 
     .exercise-input textarea {
@@ -306,16 +290,11 @@
       font-size: 14px;
       font-weight: 500;
       width: 100%;
-      transition: all 0.2s;
     }
 
     .btn-primary {
       background: var(--fill-accent);
       color: var(--on-accent);
-    }
-
-    .btn-primary:hover {
-      opacity: 0.9;
     }
 
     .btn-success {
@@ -369,7 +348,6 @@
       margin: 0;
       font-size: 24px;
       font-weight: 500;
-      color: var(--text-primary);
     }
 
     .progress-list {
@@ -381,7 +359,6 @@
 
     .progress-list h3 {
       margin: 0 0 16px;
-      color: var(--text-primary);
       font-size: 16px;
       font-weight: 500;
     }
@@ -401,7 +378,6 @@
       margin: 0;
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-primary);
     }
 
     .progress-info small {
@@ -449,13 +425,10 @@
       max-width: 500px;
       width: 100%;
       border: 0.5px solid var(--border);
-      max-height: 90vh;
-      overflow-y: auto;
     }
 
     .modal-content h2 {
       margin: 0 0 16px;
-      color: var(--text-primary);
       font-size: 20px;
       font-weight: 500;
     }
@@ -469,7 +442,6 @@
       font-size: 13px;
       font-weight: 500;
       margin-bottom: 6px;
-      color: var(--text-primary);
     }
 
     .modal-input input,
@@ -502,7 +474,6 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
-      transition: all 0.2s;
     }
 
     .modal-buttons .btn-primary {
@@ -528,20 +499,10 @@
       margin-bottom: 12px;
     }
 
-    .video-link:hover {
-      opacity: 0.8;
-    }
-
     .loading {
       text-align: center;
       color: var(--text-secondary);
       font-size: 14px;
-    }
-
-    .sync-indicator {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
     }
 
     @media (max-width: 600px) {
@@ -556,10 +517,6 @@
 
       .stats-cards {
         grid-template-columns: 1fr;
-      }
-
-      .modal-content {
-        padding: 16px;
       }
     }
   </style>
@@ -663,7 +620,7 @@
   </div>
 
   <script>
-    // Firebase Config (andreevnik82@gmail.com)
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDV0T_346njOcPhQXEpaK9Q6sUVweQRf4A",
       authDomain: "fitness30days-8b374.firebaseapp.com",
@@ -671,8 +628,7 @@
       projectId: "fitness30days-8b374",
       storageBucket: "fitness30days-8b374.firebasestorage.app",
       messagingSenderId: "333978741784",
-      appId: "1:333978741784:web:a38b3add8660407600a76d",
-      measurementId: "G-EYQ8CBS87G"
+      appId: "1:333978741784:web:a38b3add8660407600a76d"
     };
 
     // Initialize Firebase
@@ -705,10 +661,10 @@
     // Google Login
     function loginWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .catch(error => {
-          alert('Ошибка входа: ' + error.message);
-        });
+      auth.signInWithPopup(provider).catch(error => {
+        alert('Ошибка входа: ' + error.message);
+        console.error(error);
+      });
     }
 
     // Logout
@@ -855,7 +811,6 @@
               </button>
               <button class="btn btn-danger" onclick="deleteExercise('${ex.id}')">🗑️ Удалить</button>
             </div>
-            <div class="sync-indicator">☁️ Синхронизировано с облаком</div>
           </div>
         `;
       }).join('');
