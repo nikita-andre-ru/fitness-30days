@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💪 30-дневные упражнения (облако)</title>
-  <!-- Firebase v8 Compat (старая версия - работает стабильно) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <title>💪 30-дневные упражнения</title>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   
   <style>
     * {
@@ -22,12 +22,9 @@
       --surface-2: #ffffff;
       --text-primary: #0b0b0b;
       --text-secondary: #52514e;
-      --text-muted: #898781;
       --border: rgba(11, 11, 11, 0.10);
       --fill-accent: #2a78d6;
       --on-accent: #ffffff;
-      --bg-accent: #e6f1fb;
-      --text-accent: #185fa5;
       --radius: 8px;
     }
 
@@ -38,15 +35,12 @@
         --surface-2: #2c2c2a;
         --text-primary: #ffffff;
         --text-secondary: #c3c2b7;
-        --text-muted: #898781;
         --border: rgba(255, 255, 255, 0.10);
-        --bg-accent: #0c447c;
-        --text-accent: #85b7eb;
       }
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--surface-0);
       color: var(--text-primary);
       line-height: 1.6;
@@ -71,38 +65,77 @@
       border-radius: 12px;
       border: 0.5px solid var(--border);
       max-width: 400px;
-      text-align: center;
+      width: 100%;
     }
 
     .auth-box h1 {
       font-size: 28px;
       margin-bottom: 8px;
+      text-align: center;
     }
 
     .auth-box p {
       color: var(--text-secondary);
       margin-bottom: 24px;
       font-size: 14px;
+      text-align: center;
     }
 
-    .google-btn {
+    .auth-input {
+      margin-bottom: 16px;
+    }
+
+    .auth-input label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .auth-input input {
       width: 100%;
+      padding: 10px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .auth-buttons {
+      display: grid;
+      gap: 8px;
+    }
+
+    .auth-btn {
       padding: 12px 24px;
-      background: white;
-      border: 1px solid #dadce0;
+      border: none;
       border-radius: var(--radius);
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
     }
 
-    .google-btn:hover {
-      background: #f8f9fa;
+    .btn-primary {
+      background: var(--fill-accent);
+      color: var(--on-accent);
+    }
+
+    .btn-secondary {
+      background: var(--surface-1);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border);
+    }
+
+    .auth-message {
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      font-size: 13px;
+      text-align: center;
+      color: var(--text-secondary);
     }
 
     .app-screen {
@@ -133,11 +166,11 @@
 
     .user-info {
       text-align: right;
-      font-size: 13px;
     }
 
     .user-email {
       color: var(--text-secondary);
+      font-size: 13px;
       margin-bottom: 8px;
     }
 
@@ -167,13 +200,11 @@
       font-weight: 500;
       background: var(--surface-1);
       color: var(--text-primary);
-      transition: all 0.2s;
     }
 
     .tab-btn.active {
       background: var(--fill-accent);
       color: var(--on-accent);
-      border-color: var(--fill-accent);
     }
 
     .tab-content {
@@ -205,13 +236,6 @@
       margin-bottom: 24px;
     }
 
-    .date-selector label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
     .date-selector input {
       width: 100%;
       padding: 8px 12px;
@@ -220,7 +244,6 @@
       font-size: 14px;
       background: var(--surface-1);
       color: var(--text-primary);
-      font-family: inherit;
     }
 
     .exercises-grid {
@@ -252,18 +275,6 @@
       margin: 0 0 12px;
     }
 
-    .exercise-input {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .exercise-input label {
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-
     .exercise-input textarea {
       width: 100%;
       padding: 8px 12px;
@@ -275,6 +286,7 @@
       font-family: inherit;
       min-height: 60px;
       resize: vertical;
+      margin-bottom: 12px;
     }
 
     .exercise-buttons {
@@ -290,11 +302,6 @@
       font-size: 14px;
       font-weight: 500;
       width: 100%;
-    }
-
-    .btn-primary {
-      background: var(--fill-accent);
-      color: var(--on-accent);
     }
 
     .btn-success {
@@ -315,12 +322,6 @@
       border-radius: 12px;
       text-align: center;
       border: 0.5px solid var(--border);
-    }
-
-    .empty-state p {
-      color: var(--text-secondary);
-      margin: 0;
-      font-size: 15px;
     }
 
     .stats-cards {
@@ -444,8 +445,7 @@
       margin-bottom: 6px;
     }
 
-    .modal-input input,
-    .modal-input textarea {
+    .modal-input input {
       width: 100%;
       padding: 8px 12px;
       border: 0.5px solid var(--border);
@@ -454,11 +454,6 @@
       background: var(--surface-1);
       color: var(--text-primary);
       font-family: inherit;
-    }
-
-    .modal-input textarea {
-      min-height: 80px;
-      resize: vertical;
     }
 
     .modal-buttons {
@@ -489,20 +484,23 @@
 
     .video-link {
       display: inline-block;
-      color: var(--text-accent);
+      color: var(--fill-accent);
       text-decoration: none;
       font-size: 14px;
       padding: 8px 12px;
-      background: var(--bg-accent);
+      background: var(--surface-1);
       border-radius: var(--radius);
-      border: 0.5px solid var(--fill-accent);
+      border: 0.5px solid var(--border);
       margin-bottom: 12px;
     }
 
-    .loading {
-      text-align: center;
+    .info-box {
+      background: var(--surface-1);
+      padding: 12px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      margin-top: 12px;
       color: var(--text-secondary);
-      font-size: 14px;
     }
 
     @media (max-width: 600px) {
@@ -527,12 +525,25 @@
     <div class="auth-box">
       <h1>💪 30-дневные упражнения</h1>
       <p>Облачная синхронизация на все устройства</p>
-      <button class="google-btn" onclick="loginWithGoogle()">
-        🔐 Вход через Google
-      </button>
-      <p style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
-        Ваши данные безопасно хранятся в облаке и синхронизируются на все устройства
-      </p>
+      
+      <div class="auth-input">
+        <label>Email:</label>
+        <input type="email" id="authEmail" placeholder="andreevnik82@gmail.com" value="andreevnik82@gmail.com">
+      </div>
+
+      <div class="auth-input">
+        <label>Пароль:</label>
+        <input type="password" id="authPassword" placeholder="Придумай пароль">
+      </div>
+
+      <div class="auth-buttons">
+        <button class="auth-btn btn-primary" onclick="signup()">📝 Создать аккаунт</button>
+        <button class="auth-btn btn-secondary" onclick="login()">🔐 Вход</button>
+      </div>
+
+      <div class="auth-message">
+        💡 Используй любой пароль. Данные будут синхронизироваться в облаке Firebase.
+      </div>
     </div>
   </div>
 
@@ -567,7 +578,9 @@
         </div>
 
         <div id="exercisesList" class="exercises-grid">
-          <div class="loading">⏳ Загрузка данных...</div>
+          <div class="empty-state">
+            <p>⏳ Загрузка данных...</p>
+          </div>
         </div>
       </div>
 
@@ -609,7 +622,7 @@
       <div class="modal-input">
         <label>YouTube ссылка (опционально)</label>
         <input type="text" id="youtubeLink" placeholder="https://www.youtube.com/watch?v=...">
-        <small style="margin-top: 4px; color: var(--text-secondary); display: block;">💡 Вставь ссылку на видео с техникой упражнения</small>
+        <small style="margin-top: 4px; color: var(--text-secondary); display: block;">💡 Вставь ссылку на видео</small>
       </div>
 
       <div class="modal-buttons">
@@ -658,13 +671,36 @@
       }
     });
 
-    // Google Login
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(error => {
-        alert('Ошибка входа: ' + error.message);
-        console.error(error);
-      });
+    // Login
+    function login() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+
+      if (!email || !password) {
+        alert('Введи email и пароль');
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+          alert('Ошибка входа: ' + error.message);
+        });
+    }
+
+    // Signup
+    function signup() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+
+      if (!email || !password) {
+        alert('Введи email и пароль');
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .catch(error => {
+          alert('Ошибка регистрации: ' + error.message);
+        });
     }
 
     // Logout
@@ -801,8 +837,8 @@
             ${ex.link ? `<a href="${ex.link}" target="_blank" class="video-link">🔗 Открыть видео</a>` : ''}
 
             <div class="exercise-input">
-              <label>Количество повторений/подходов:</label>
-              <textarea id="reps-${ex.id}" placeholder="Например: 10, 12, 15 или 30 сек">${repsValue}</textarea>
+              <label>Количество повторений:</label>
+              <textarea id="reps-${ex.id}" placeholder="Например: 10, 12, 15">${repsValue}</textarea>
             </div>
 
             <div class="exercise-buttons">
