@@ -55,81 +55,18 @@
       line-height: 1.6;
     }
     .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
-    .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .auth-box {
-      background: var(--surface-2);
-      padding: 40px;
-      border-radius: 12px;
-      border: 0.5px solid var(--border);
-      max-width: 400px;
-      width: 100%;
-    }
-    .auth-box h1 { font-size: 28px; margin-bottom: 8px; }
-    .auth-box p { color: var(--text-secondary); margin-bottom: 24px; font-size: 14px; }
-    .auth-tabs {
+    .loading-screen {
       display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      border-bottom: 0.5px solid var(--border);
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 16px;
     }
-    .auth-tab-btn {
-      flex: 1;
-      padding: 12px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
+    .loading-text {
       color: var(--text-secondary);
-      border-bottom: 2px solid transparent;
+      font-size: 16px;
     }
-    .auth-tab-btn.active {
-      color: var(--fill-accent);
-      border-bottom-color: var(--fill-accent);
-    }
-    .auth-form { display: none; }
-    .auth-form.active { display: block; }
-    .form-input {
-      margin-bottom: 16px;
-    }
-    .form-input label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-    .form-input input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 14px;
-      background: var(--surface-1);
-      color: var(--text-primary);
-    }
-    .form-error {
-      background: var(--bg-error);
-      color: var(--text-error);
-      padding: 12px;
-      border-radius: var(--radius);
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .form-error.show { display: block; }
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: var(--fill-accent);
-      color: var(--on-accent);
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
-    .btn:hover { opacity: 0.9; }
     .app-screen { display: none; }
     .app-screen.active { display: block; }
     .header {
@@ -141,13 +78,9 @@
       border-bottom: 0.5px solid var(--border);
     }
     .header h1 { font-size: 24px; font-weight: 500; }
-    .logout-btn {
-      padding: 8px 16px;
-      background: var(--surface-1);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 13px;
+    .header-info {
+      font-size: 12px;
+      color: var(--text-secondary);
     }
     .tabs {
       display: flex;
@@ -197,6 +130,18 @@
       display: inline-block;
       margin-bottom: 12px;
     }
+    .btn {
+      padding: 10px 16px;
+      background: var(--fill-accent);
+      color: var(--on-accent);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 12px;
+      width: 100%;
+    }
     .btn-secondary {
       background: var(--surface-1);
       color: var(--text-primary);
@@ -213,10 +158,6 @@
       width: auto;
       margin-left: 8px;
       margin-bottom: 0;
-    }
-    .btn-success {
-      background: var(--bg-success);
-      color: var(--text-success);
     }
     .exercise-item {
       background: var(--surface-1);
@@ -366,14 +307,6 @@
       justify-content: space-between;
       align-items: center;
     }
-    .warning-badge {
-      background: var(--bg-warning);
-      color: var(--text-warning);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-top: 12px;
-    }
     .error-badge {
       background: var(--bg-error);
       color: var(--text-error);
@@ -382,7 +315,6 @@
       font-size: 12px;
       margin-top: 12px;
     }
-    .loading { text-align: center; color: var(--text-secondary); }
     .empty-state {
       text-align: center;
       padding: 32px;
@@ -412,55 +344,17 @@
   </style>
 </head>
 <body>
-  <div id="authScreen" class="auth-screen">
-    <div class="auth-box">
-      <h1>30-дневные упражнения</h1>
-      <p>Система тренировок с блоками и расписанием</p>
-
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Вход</button>
-        <button class="auth-tab-btn" onclick="switchAuthTab('register')">Регистрация</button>
-      </div>
-
-      <!-- ВХОД -->
-      <div id="loginForm" class="auth-form active">
-        <div class="form-error" id="loginError"></div>
-        <div class="form-input">
-          <label>Email</label>
-          <input type="email" id="loginEmail" placeholder="your@email.com">
-        </div>
-        <div class="form-input">
-          <label>Пароль</label>
-          <input type="password" id="loginPassword" placeholder="Минимум 6 символов">
-        </div>
-        <button class="btn" onclick="login()">Войти</button>
-      </div>
-
-      <!-- РЕГИСТРАЦИЯ -->
-      <div id="registerForm" class="auth-form">
-        <div class="form-error" id="registerError"></div>
-        <div class="form-input">
-          <label>Email</label>
-          <input type="email" id="registerEmail" placeholder="your@email.com">
-        </div>
-        <div class="form-input">
-          <label>Пароль</label>
-          <input type="password" id="registerPassword" placeholder="Минимум 6 символов">
-        </div>
-        <div class="form-input">
-          <label>Подтвердить пароль</label>
-          <input type="password" id="registerPasswordConfirm" placeholder="Повтори пароль">
-        </div>
-        <button class="btn" onclick="register()">Зарегистрироваться</button>
-      </div>
-    </div>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-text">⏳ Загружаю приложение...</div>
   </div>
 
   <div id="appScreen" class="app-screen">
     <div class="container">
       <div class="header">
-        <h1>30-дневные упражнения</h1>
-        <button class="logout-btn" onclick="logout()">Выход</button>
+        <div>
+          <h1>30-дневные упражнения</h1>
+          <div class="header-info">💾 Данные автоматически сохраняются в облаке</div>
+        </div>
       </div>
 
       <div class="tabs">
@@ -574,96 +468,20 @@
     let editingBlockId = null;
     const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
+    // Инициализация: анонимная аутентификация
     auth.onAuthStateChanged(user => {
-      if (user) {
+      if (!user) {
+        // Если не авторизован, авторизуй анонимно
+        auth.signInAnonymously().catch(error => {
+          console.error('Ошибка аутентификации:', error);
+        });
+      } else {
         currentUser = user;
-        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
         loadBlocks();
-      } else {
-        document.getElementById('authScreen').style.display = 'flex';
-        document.getElementById('appScreen').classList.remove('active');
       }
     });
-
-    function switchAuthTab(tab) {
-      document.querySelectorAll('.auth-form').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.auth-tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
-      event.target.classList.add('active');
-      document.getElementById('loginError').classList.remove('show');
-      document.getElementById('registerError').classList.remove('show');
-    }
-
-    function login() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const errorEl = document.getElementById('loginError');
-
-      if (!email || !password) {
-        showError(errorEl, 'Заполни email и пароль');
-        return;
-      }
-
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(error => {
-          let message = 'Ошибка при входе';
-          if (error.code === 'auth/user-not-found') message = 'Пользователь не найден';
-          if (error.code === 'auth/wrong-password') message = 'Неверный пароль';
-          if (error.code === 'auth/invalid-email') message = 'Неверный email';
-          showError(errorEl, message);
-        });
-    }
-
-    function register() {
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-      const errorEl = document.getElementById('registerError');
-
-      if (!email || !password || !passwordConfirm) {
-        showError(errorEl, 'Заполни все поля');
-        return;
-      }
-
-      if (password !== passwordConfirm) {
-        showError(errorEl, 'Пароли не совпадают');
-        return;
-      }
-
-      if (password.length < 6) {
-        showError(errorEl, 'Пароль должен быть минимум 6 символов');
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .catch(error => {
-          let message = 'Ошибка при регистрации';
-          if (error.code === 'auth/email-already-in-use') message = 'Email уже зарегистрирован';
-          if (error.code === 'auth/invalid-email') message = 'Неверный email';
-          if (error.code === 'auth/weak-password') message = 'Пароль слишком слабый';
-          showError(errorEl, message);
-        });
-    }
-
-    function showError(el, message) {
-      el.textContent = message;
-      el.classList.add('show');
-    }
-
-    function logout() {
-      auth.signOut();
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tab).classList.add('active');
-      event.target.classList.add('active');
-      if (tab === 'dashboard') renderDashboard();
-      if (tab === 'schedule') renderSchedule();
-      if (tab === 'stats') renderStats();
-    }
 
     function loadBlocks() {
       if (!currentUser) return;
@@ -924,6 +742,16 @@
       if (confirm('Удалить этот блок?')) {
         db.ref(`users/${currentUser.uid}/blocks/${blockId}`).remove();
       }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+      if (tab === 'dashboard') renderDashboard();
+      if (tab === 'schedule') renderSchedule();
+      if (tab === 'stats') renderStats();
     }
 
     function renderSchedule() {
