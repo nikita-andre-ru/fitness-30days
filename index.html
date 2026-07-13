@@ -111,10 +111,6 @@
       border-radius: 12px;
       padding: 16px;
     }
-    .card.conflict {
-      border-color: var(--text-error);
-      background: var(--bg-error);
-    }
     .card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
     .card-title { font-size: 16px; font-weight: 500; margin: 0; }
     .card-subtitle { font-size: 13px; color: var(--text-secondary); margin: 4px 0 0; }
@@ -167,16 +163,6 @@
       align-items: center;
       gap: 12px;
     }
-    .exercise-item.completed {
-      background: var(--bg-success);
-      border-color: var(--text-success);
-    }
-    .exercise-checkbox {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      accent-color: var(--fill-accent);
-    }
     .exercise-info {
       flex: 1;
     }
@@ -220,10 +206,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .time-slot.conflict {
-      background: var(--bg-error);
-      border-color: var(--text-error);
     }
     .time-text {
       font-weight: 500;
@@ -300,14 +282,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .error-badge {
-      background: var(--bg-error);
-      color: var(--text-error);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-top: 12px;
     }
     .empty-state {
       text-align: center;
@@ -442,67 +416,58 @@
   </div>
 
   <script>
-    // Supabase конфиг
-    const SUPABASE_URL = 'https://xdfqumzvpjjvimvxelge.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_ZQYjEcdANVvYVNgyRdI3tg_OVFjIZVk';
-    
-    const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+    let dbClient = null;
     let blocks = [];
     let tempExercises = [];
     let editingBlockId = null;
     const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
-    // Инициализация при загрузке
+    const SUPABASE_URL = 'https://xdfqumzvpjjvimvxelge.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_ZQYjEcdANVvYVNgyRdI3tg_OVFjIZVk';
+
     async function init() {
       try {
+        const { createClient } = window.supabase;
+        dbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        console.log('Подключаюсь к Supabase...');
         await loadBlocks();
+        
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
+        console.log('✅ Приложение загружено!');
       } catch (error) {
-        console.error('Ошибка инициализации:', error);
+        console.error('❌ Ошибка инициализации:', error);
         document.getElementById('loadingScreen').innerHTML = 
-          '<div class="loading-text">❌ Ошибка подключения. Попробуй перезагрузить страницу.</div>';
+          '<div class="loading-text">❌ Ошибка: ' + error.message + '<br><br>Перезагрузи страницу</div>';
       }
     }
 
-    // Загрузить блоки из Supabase
     async function loadBlocks() {
-      const { data, error } = await supabase
+      if (!dbClient) {
+        console.log('dbClient не инициализирован');
+        return;
+      }
+
+      const { data, error } = await dbClient
         .from('blocks')
         .select('*')
         .order('day_of_week', { ascending: true });
 
       if (error) {
         console.error('Ошибка загрузки блоков:', error);
-        // Создаём таблицу если её нет
-        await createBlocksTable();
-        return;
+        blocks = [];
+      } else {
+        blocks = data || [];
+        console.log('✅ Загружено блоков:', blocks.length);
       }
 
-      blocks = data || [];
       renderBlocks();
       renderDashboard();
     }
 
-    // Создать таблицу если её нет
-    async function createBlocksTable() {
-      const { error } = await supabase.rpc('create_blocks_table_if_not_exists').catch(() => {
-        // Таблица уже создана или другая ошибка
-        blocks = [];
-        renderBlocks();
-        renderDashboard();
-      });
-    }
-
     function getTodayIndex() {
       return new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-    }
-
-    function getTodayDateStr() {
-      const today = new Date();
-      return today.toISOString().split('T')[0];
     }
 
     function renderDashboard() {
@@ -538,14 +503,12 @@
                   <p class="card-subtitle">${(block.exercises || []).length} упражнений</p>
                 </div>
                 <input type="checkbox" class="exercise-checkbox" ${block.completed ? 'checked' : ''} 
-                  onchange="toggleBlockCompletion(${block.id}, this.checked)">
+                  onchange="toggleBlockCompletion(${block.id}, this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
               </div>
               <div style="margin-top: 12px;">
-                ${(block.exercises || []).map((ex, exIdx) => {
+                ${(block.exercises || []).map((ex) => {
                   return `
                     <div class="exercise-item">
-                      <input type="checkbox" class="exercise-checkbox" 
-                        onchange="logAction('Упражнение отмечено: ${ex.name}')">
                       <div class="exercise-info">
                         <div class="exercise-name">${ex.name}</div>
                         <div class="exercise-reps">${ex.reps}</div>
@@ -565,7 +528,7 @@
     }
 
     async function toggleBlockCompletion(blockId, isCompleted) {
-      const { error } = await supabase
+      const { error } = await dbClient
         .from('blocks')
         .update({ completed: isCompleted })
         .eq('id', blockId);
@@ -617,12 +580,9 @@
       
       const warningEl = document.getElementById('blockConflictWarning');
       if (conflicting) {
-        warningEl.innerHTML = `
-          <div class="error-badge">
-            ⚠️ <strong>Конфликт времени!</strong><br>
-            На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflicting.name}"
-          </div>
-        `;
+        warningEl.innerHTML = `<div style="background: var(--bg-error); color: var(--text-error); padding: 6px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 16px;">
+          ⚠️ На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflicting.name}"
+        </div>`;
       } else {
         warningEl.innerHTML = '';
       }
@@ -709,7 +669,7 @@
       }
 
       const conflict = checkTimeConflict(editingBlockId || 'new', time, dayOfWeek);
-      if (conflict && !confirm(`На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflict.name}"\n\nВы уверены, что хотите сохранить?`)) {
+      if (conflict && !confirm(`На ${dayNames[dayOfWeek]} в ${time} уже стоит блок "${conflict.name}"\n\nВы уверены?`)) {
         return;
       }
 
@@ -722,22 +682,22 @@
       };
 
       if (editingBlockId) {
-        const { error } = await supabase
+        const { error } = await dbClient
           .from('blocks')
           .update(blockData)
           .eq('id', editingBlockId);
         
         if (error) {
-          alert('Ошибка сохранения: ' + error.message);
+          alert('Ошибка: ' + error.message);
           return;
         }
       } else {
-        const { error } = await supabase
+        const { error } = await dbClient
           .from('blocks')
           .insert([blockData]);
         
         if (error) {
-          alert('Ошибка сохранения: ' + error.message);
+          alert('Ошибка: ' + error.message);
           return;
         }
       }
@@ -748,7 +708,7 @@
 
     async function deleteBlock(blockId) {
       if (confirm('Удалить этот блок?')) {
-        const { error } = await supabase
+        const { error } = await dbClient
           .from('blocks')
           .delete()
           .eq('id', blockId);
@@ -828,11 +788,7 @@
       document.getElementById('statsContent').innerHTML = html;
     }
 
-    function logAction(msg) {
-      console.log(msg);
-    }
-
-    // Инициализируем приложение
+    // Запуск приложения
     init();
   </script>
 </body>
