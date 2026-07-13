@@ -79,7 +79,7 @@
     .exercise-item.completed { background: var(--bg-success); border-color: var(--text-success); }
     .exercise-info { flex: 1; }
     .exercise-name { font-weight: 500; font-size: 14px; }
-    .exercise-day { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .exercise-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
     .day-cell { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
     .day-cell.selected { background: var(--bg-accent); border-color: var(--fill-accent); color: var(--text-accent); font-weight: 500; }
     .day-cell small { display: block; font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
@@ -98,6 +98,8 @@
     .progress-bar { background: var(--surface-1); border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden; }
     .progress-fill { background: var(--fill-accent); height: 100%; transition: width 0.3s; }
     .stat-row { display: flex; justify-content: space-between; padding: 12px; background: var(--surface-1); border-radius: var(--radius); margin-bottom: 8px; font-size: 14px; }
+    .notification { position: fixed; top: 20px; right: 20px; background: var(--bg-success); border: 0.5px solid var(--text-success); color: var(--text-success); padding: 16px; border-radius: 8px; z-index: 2000; max-width: 300px; animation: slideIn 0.3s; }
+    @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
   </style>
 </head>
 <body>
@@ -145,8 +147,7 @@
   <div id="exerciseModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Добавить упражнение</h2>
-        <p>Будет идти ровно 30 дней с момента добавления</p>
+        <h2>Добавить упражнение на 30 дней</h2>
       </div>
       <div class="modal-input">
         <label>Название упражнения</label>
@@ -163,6 +164,10 @@
           <option value="5">Суббота</option>
           <option value="6">Воскресенье</option>
         </select>
+      </div>
+      <div class="modal-input">
+        <label>Время тренировки</label>
+        <input type="time" id="exerciseTime" value="10:00">
       </div>
       <div class="modal-input">
         <label>YouTube ссылка (опционально)</label>
@@ -208,6 +213,10 @@
         await loadExercises();
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
+        
+        // Проверяем уведомления каждую минуту
+        setInterval(checkNotifications, 60000);
+        checkNotifications();
       } catch (error) {
         console.error('❌ Ошибка:', error);
         document.getElementById('loadingScreen').innerHTML = '<div class="loading-text">❌ Ошибка: ' + error.message + '</div>';
@@ -236,6 +245,14 @@
       const today = new Date();
       const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
       return Math.min(daysPassed + 1, 30);
+    }
+
+    function getDaysLeftInCycle(ex) {
+      if (!ex.start_date) return 30;
+      const startDate = new Date(ex.start_date);
+      const today = new Date();
+      const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+      return Math.max(30 - daysPassed, 0);
     }
 
     function getTodayIndex() {
@@ -282,7 +299,7 @@
             <div class="exercise-item ${isCompleted ? 'completed' : ''}" style="margin-bottom: 12px;">
               <div class="exercise-info">
                 <div class="exercise-name">${ex.name}</div>
-                <div class="exercise-day">День ${dayInCycle}/30</div>
+                <div class="exercise-meta">🕐 ${ex.time} • День ${dayInCycle}/30</div>
                 ${isCompleted ? `<div style="font-size: 12px; margin-top: 4px;">✅ ${ex.completed_dates[todayDateStr]}</div>` : ''}
               </div>
               <div>
@@ -301,14 +318,14 @@
     function renderExercises() {
       const html = exercises.map(ex => {
         const dayInCycle = getExerciseDayInCycle(ex);
-        const daysLeft = 30 - dayInCycle + 1;
+        const daysLeft = getDaysLeftInCycle(ex);
         return `
           <div class="card" style="margin-bottom: 16px;">
             <div class="card-header">
               <div>
                 <div class="day-badge">День ${dayInCycle}/30 (осталось ${daysLeft})</div>
                 <p class="card-title">${ex.name}</p>
-                <p class="card-subtitle">${dayNames[ex.day_of_week]}</p>
+                <p class="card-subtitle">🕐 ${ex.time} • ${dayNames[ex.day_of_week]}</p>
               </div>
             </div>
             <div style="margin-top: 12px; display: flex; gap: 8px;">
@@ -324,6 +341,7 @@
     function openExerciseModal() {
       document.getElementById('exerciseName').value = '';
       document.getElementById('exerciseDay').value = getTodayIndex();
+      document.getElementById('exerciseTime').value = '10:00';
       document.getElementById('exerciseLink').value = '';
       document.getElementById('exerciseModal').classList.add('active');
     }
@@ -335,10 +353,11 @@
     async function saveExercise() {
       const name = document.getElementById('exerciseName').value.trim();
       const dayOfWeek = document.getElementById('exerciseDay').value;
+      const time = document.getElementById('exerciseTime').value;
       const link = document.getElementById('exerciseLink').value.trim();
 
-      if (!name) {
-        alert('Заполни название');
+      if (!name || !time) {
+        alert('Заполни название и время');
         return;
       }
 
@@ -347,6 +366,7 @@
       const { error } = await dbClient.from('exercises').insert([{
         name,
         day_of_week: parseInt(dayOfWeek),
+        time,
         link: link || null,
         start_date: today,
         completed_dates: {}
@@ -435,7 +455,7 @@
               <div class="exercise-item" style="margin-bottom: 12px;">
                 <div class="exercise-info">
                   <div class="exercise-name">${ex.name}</div>
-                  <div class="exercise-day">День ${dayInCycle}/30</div>
+                  <div class="exercise-meta">🕐 ${ex.time} • День ${dayInCycle}/30</div>
                 </div>
                 ${ex.link ? `<a href="${ex.link}" target="_blank" style="font-size: 14px; text-decoration: none;">🎥</a>` : ''}
               </div>
@@ -470,6 +490,55 @@
         </div>
       `;
       document.getElementById('statsContent').innerHTML = html;
+    }
+
+    function checkNotifications() {
+      const now = new Date();
+      const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const todayExercises = getTodayExercises();
+
+      todayExercises.forEach(ex => {
+        if (ex.time === currentTime) {
+          showNotification(ex.name);
+        }
+      });
+    }
+
+    function showNotification(exerciseName) {
+      // Звук
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 800;
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+
+      // Всплывающее окно
+      const notif = document.createElement('div');
+      notif.className = 'notification';
+      notif.innerHTML = `🔔 Время: ${exerciseName}!`;
+      document.body.appendChild(notif);
+
+      setTimeout(() => notif.remove(), 5000);
+
+      // Браузер уведомление
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('30-дневные упражнения', {
+          body: `Пора делать: ${exerciseName}!`,
+          icon: '💪'
+        });
+      }
+    }
+
+    // Запрос разрешения на уведомления
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
     }
 
     init();
