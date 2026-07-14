@@ -2,11 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2a78d6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Упражнения">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232a78d6' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em'>💪</text></svg>">
   <title>30-дневные упражнения Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
     :root {
       --surface-0: #fcfcfb;
       --surface-1: #f5f5f4;
@@ -51,6 +58,10 @@
       background: var(--surface-0);
       color: var(--text-primary);
       line-height: 1.6;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
     .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
     .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 16px; }
@@ -60,6 +71,9 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
     .header h1 { font-size: 24px; font-weight: 500; }
     .header-info { font-size: 12px; color: var(--text-secondary); }
+    .install-prompt { background: var(--bg-accent); border: 0.5px solid var(--fill-accent); color: var(--text-accent); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; }
+    .install-prompt.show { display: flex; justify-content: space-between; align-items: center; }
+    .install-prompt button { padding: 6px 12px; background: var(--fill-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 12px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 0.5px solid var(--border); overflow-x: auto; }
     .tab-btn { padding: 12px 16px; background: transparent; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; white-space: nowrap; }
     .tab-btn.active { color: var(--fill-accent); border-bottom-color: var(--fill-accent); }
@@ -74,9 +88,11 @@
     .btn { padding: 10px 16px; background: var(--fill-accent); color: var(--on-accent); border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; margin-top: 12px; width: 100%; }
     .btn-secondary { background: var(--surface-1); color: var(--text-primary); border: 0.5px solid var(--border); }
     .btn-danger { background: var(--bg-error); color: var(--text-error); }
+    .btn-skip { background: var(--bg-warning); color: var(--text-warning); }
     .btn-small { padding: 6px 12px; font-size: 12px; margin-top: 0; width: auto; margin-left: 8px; margin-bottom: 0; }
     .exercise-item { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
     .exercise-item.completed { background: var(--bg-success); border-color: var(--text-success); }
+    .exercise-item.skipped { background: var(--bg-warning); border-color: var(--text-warning); opacity: 0.7; }
     .exercise-info { flex: 1; }
     .exercise-name { font-weight: 500; font-size: 14px; }
     .exercise-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
@@ -94,8 +110,8 @@
     .modal-input { margin-bottom: 16px; }
     .modal-input label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
     .modal-input input { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border); border-radius: var(--radius); font-size: 14px; background: var(--surface-1); color: var(--text-primary); font-family: inherit; }
-    .modal-buttons { display: flex; gap: 8px; margin-top: 24px; }
-    .modal-buttons button { flex: 1; padding: 10px; }
+    .modal-buttons { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+    .modal-buttons button { flex: 1; padding: 10px; min-width: 100px; }
     .empty-state { text-align: center; padding: 32px; color: var(--text-secondary); }
     .progress-bar { background: var(--surface-1); border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden; }
     .progress-fill { background: var(--fill-accent); height: 100%; transition: width 0.3s; }
@@ -111,10 +127,15 @@
 
   <div id="appScreen" class="app-screen">
     <div class="container">
+      <div id="installPrompt" class="install-prompt">
+        <span>📱 Установи приложение на главный экран</span>
+        <button onclick="installApp()">Установить</button>
+      </div>
+
       <div class="header">
         <div>
           <h1>30-дневные упражнения</h1>
-          <div class="header-info">☁️ Каждое упражнение идет 30 дней подряд</div>
+          <div class="header-info">☁️ 30 дней подряд с уведомлениями</div>
         </div>
       </div>
 
@@ -180,17 +201,40 @@
         <input type="text" id="completionReps" placeholder="Например: 15, или 3 подхода по 10">
       </div>
       <div class="modal-buttons">
-        <button class="btn" onclick="confirmCompletion()">Готово</button>
+        <button class="btn" onclick="confirmCompletion()">✅ Выполнено</button>
+        <button class="btn btn-skip" onclick="skipExercise()">⏭️ Пропустить</button>
         <button class="btn btn-secondary" onclick="closeCompleteModal()">Отмена</button>
       </div>
     </div>
   </div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installPrompt').classList.add('show');
+    });
+
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            document.getElementById('installPrompt').classList.remove('show');
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
     let dbClient = null;
     let exercises = [];
     let completingExerciseId = null;
-    const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
     const dayShorts = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
     const SUPABASE_URL = 'https://xdfqumzvpjjvimvxelge.supabase.co';
@@ -200,6 +244,12 @@
       try {
         const { createClient } = window.supabase;
         dbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Запрос разрешения на уведомления
+        if ('Notification' in window) {
+          Notification.requestPermission();
+        }
+        
         await loadExercises();
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appScreen').classList.add('active');
@@ -264,29 +314,33 @@
       } else {
         const todayDateStr = getTodayDateStr();
         const completedCount = exercises.filter(e => e.completed_dates && e.completed_dates[todayDateStr]).length;
+        const skippedCount = exercises.filter(e => e.skipped_dates && e.skipped_dates[todayDateStr]).length;
+        const totalToday = exercises.length - skippedCount;
         
         html += `<div class="stat-row">
-          <span>Выполнено сегодня:</span>
-          <strong>${completedCount}/${exercises.length}</strong>
+          <span>Выполнено:</span>
+          <strong>${completedCount}/${totalToday}</strong>
         </div>`;
         
         html += '<div class="progress-bar"><div class="progress-fill" style="width: ' + 
-          (exercises.length > 0 ? Math.round(completedCount / exercises.length * 100) : 0) + '%"></div></div>';
+          (totalToday > 0 ? Math.round(completedCount / totalToday * 100) : 0) + '%"></div></div>';
 
         html += '<div style="margin-top: 24px;">';
         exercises.forEach((ex) => {
           const dayInCycle = getExerciseDayInCycle(ex);
           const isCompleted = ex.completed_dates && ex.completed_dates[todayDateStr];
+          const isSkipped = ex.skipped_dates && ex.skipped_dates[todayDateStr];
           html += `
-            <div class="exercise-item ${isCompleted ? 'completed' : ''}" style="margin-bottom: 12px;">
+            <div class="exercise-item ${isCompleted ? 'completed' : ''} ${isSkipped ? 'skipped' : ''}" style="margin-bottom: 12px;">
               <div class="exercise-info">
                 <div class="exercise-name">${ex.name}</div>
                 <div class="exercise-meta">🕐 ${ex.time} • День ${dayInCycle}/30</div>
                 ${isCompleted ? `<div style="font-size: 12px; margin-top: 4px;">✅ ${ex.completed_dates[todayDateStr]}</div>` : ''}
+                ${isSkipped ? `<div style="font-size: 12px; margin-top: 4px;">⏭️ Пропущено</div>` : ''}
               </div>
               <div>
                 ${ex.link ? `<a href="${ex.link}" target="_blank" style="font-size: 14px; text-decoration: none; margin-right: 8px;">🎥</a>` : ''}
-                <button class="btn-small btn-secondary" onclick="openCompleteModal(${ex.id}, '${ex.name}')">${isCompleted ? 'Изменить' : 'Отметить'}</button>
+                <button class="btn-small btn-secondary" onclick="openCompleteModal(${ex.id}, '${ex.name}')">${isCompleted || isSkipped ? 'Изменить' : 'Отметить'}</button>
               </div>
             </div>
           `;
@@ -348,7 +402,8 @@
         time,
         link: link || null,
         start_date: today,
-        completed_dates: {}
+        completed_dates: {},
+        skipped_dates: {}
       }]);
 
       if (error) {
@@ -388,11 +443,35 @@
       const ex = exercises.find(e => e.id === completingExerciseId);
       
       const completedDates = ex.completed_dates || {};
+      const skippedDates = ex.skipped_dates || {};
+      
       completedDates[todayDateStr] = reps;
+      delete skippedDates[todayDateStr];
 
       const { error } = await dbClient
         .from('exercises')
-        .update({ completed_dates: completedDates })
+        .update({ completed_dates: completedDates, skipped_dates: skippedDates })
+        .eq('id', completingExerciseId);
+
+      if (!error) {
+        closeCompleteModal();
+        await loadExercises();
+      }
+    }
+
+    async function skipExercise() {
+      const todayDateStr = getTodayDateStr();
+      const ex = exercises.find(e => e.id === completingExerciseId);
+      
+      const completedDates = ex.completed_dates || {};
+      const skippedDates = ex.skipped_dates || {};
+      
+      skippedDates[todayDateStr] = true;
+      delete completedDates[todayDateStr];
+
+      const { error } = await dbClient
+        .from('exercises')
+        .update({ completed_dates: completedDates, skipped_dates: skippedDates })
         .eq('id', completingExerciseId);
 
       if (!error) {
@@ -506,6 +585,7 @@
     }
 
     function showNotification(exerciseName) {
+      // Звук
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -519,16 +599,14 @@
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
 
-      const notif = document.createElement('div');
-      notif.className = 'notification';
-      notif.innerHTML = `🔔 Время: ${exerciseName}!`;
-      document.body.appendChild(notif);
-
-      setTimeout(() => notif.remove(), 5000);
-    }
-
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+      // Браузер уведомление
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Пора тренироваться! 💪', {
+          body: exerciseName,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%232a78d6" width="192" height="192"/><text x="50%" y="50%" font-size="100" fill="white" text-anchor="middle" dy=".3em">💪</text></svg>',
+          tag: 'fitness-notification'
+        });
+      }
     }
 
     init();
